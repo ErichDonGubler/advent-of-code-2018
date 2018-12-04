@@ -1,0 +1,8 @@
+[package]
+name = "advent-of-code-2018"
+version = "0.1.0"
+authors = ["Erich Gubler <erichdongubler@gmail.com>"]
+
+[dependencies]
+aoc-runner = "0.1.0"
+aoc-runner-derive = "0.1.6"
