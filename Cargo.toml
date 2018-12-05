@@ -6,3 +6,4 @@ authors = ["Erich Gubler <erichdongubler@gmail.com>"]
 [dependencies]
 aoc-runner = "0.1.0"
 aoc-runner-derive = "0.1.6"
+arrayvec = { version = "0.4.8", features = ["array-sizes-129-255"] }
