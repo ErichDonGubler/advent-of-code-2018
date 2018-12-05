@@ -1,9 +1,6 @@
 use {
     aoc_runner_derive::aoc,
-    std::{
-        collections::HashMap,
-        str::Split,
-    },
+    std::{collections::HashMap, str::Split},
 };
 
 struct Day1EntryIterator<'i> {
@@ -55,7 +52,9 @@ pub fn day1_part2(input: &str) -> i32 {
         seen.insert(total, (repeat_count, 0));
         for (change_num, change) in changes.iter().cloned().enumerate() {
             total = total.checked_add(change).unwrap();
-            if let Some((prev_repeat_count, prev_change_num)) = seen.insert(total, (repeat_count, change_num as i32 + 1)) {
+            if let Some((prev_repeat_count, prev_change_num)) =
+                seen.insert(total, (repeat_count, change_num as i32 + 1))
+            {
                 return total;
             }
         }
