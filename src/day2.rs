@@ -46,7 +46,7 @@ pub struct Part2Answer<'s> {
 }
 
 impl<'s> Display for Part2Answer<'s> {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         for c in self
             .s1
             .chars()
