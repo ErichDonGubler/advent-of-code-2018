@@ -1,23 +1,13 @@
 use {
     aoc_runner_derive::aoc,
-    re_parse::{
-        Regex,
-        ReParse,
-        Error as ReParseError,
-    },
+    re_parse::{Error as ReParseError, ReParse, Regex},
     serde_derive::Deserialize,
     std::{
         cmp::max,
         mem::replace,
-        ops::{
-            Index,
-            IndexMut,
-        },
+        ops::{Index, IndexMut},
         slice::Iter as SliceIter,
-        str::{
-            FromStr,
-            Split,
-        },
+        str::{FromStr, Split},
     },
 };
 
@@ -101,7 +91,6 @@ fn test_intersection() {
         "#0 @ 1,4: 1x1",
         "#0 @ 1,3: 1x1",
         "#0 @ 1,2: 1x1",
-
         // Way out there
     ] {
         if claim.intersects(&other.parse().unwrap()) {
@@ -112,13 +101,10 @@ fn test_intersection() {
     for other in &[
         // Same thing
         CLAIM_TO_COMPARE_TO,
-
         // Other encompasses first
         "#0 @ 1,1: 5x5",
-
         // First encompasses other
         "#0 @ 3,3: 1x1",
-
         // Edges
         "#0 @ 1,1: 2x2",
         "#0 @ 2,1: 2x2",
@@ -135,11 +121,16 @@ fn test_intersection() {
     }
 
     // Other failing cases found
-    fn intersects(s1: &str, s2: &str) -> bool{
-        s1.parse::<Claim>().unwrap().intersects(&s2.parse().unwrap())
+    fn intersects(s1: &str, s2: &str) -> bool {
+        s1.parse::<Claim>()
+            .unwrap()
+            .intersects(&s2.parse().unwrap())
     }
     //"#1236 @ ".parse().unwrap()
-    assert!(intersects("#1236 @ 420,613: 19x12", "#344 @ 426,611: 12x21"));
+    assert!(intersects(
+        "#1236 @ 420,613: 19x12",
+        "#344 @ 426,611: 12x21"
+    ));
 }
 
 #[derive(Debug)]
@@ -211,19 +202,21 @@ impl<T> GrowOnlyGrid<T> {
     }
 
     pub fn grow_with<F: FnMut() -> T>(&mut self, x: usize, y: usize, f: F)
-        where T: Default,
+    where
+        T: Default,
     {
         let old_len_x = self.len_x;
         let old_len_y = self.len_y;
-        let old = replace(self, Self::new_with(max(x, old_len_x), max(y, old_len_y), f));
+        let old = replace(
+            self,
+            Self::new_with(max(x, old_len_x), max(y, old_len_y), f),
+        );
 
         let mut old_values = old.inner.into_iter();
         for y in 0..old_len_y {
             // OPT:  We could probably just copy slices here directly
             for x in 0..old_len_x {
-                let idx = unsafe {
-                    self.index_from_coords_unchecked(x, y)
-                };
+                let idx = unsafe { self.index_from_coords_unchecked(x, y) };
                 self.inner[idx] = old_values.next().unwrap();
             }
         }
@@ -235,11 +228,13 @@ impl<T> GrowOnlyGrid<T> {
 
     fn index_from_coords(&self, x: usize, y: usize) -> usize {
         if x >= self.len_x || y >= self.len_y {
-            panic!("coordinates {:?} exceed current dimensions of {:?}", (x, y), self.dimensions());
+            panic!(
+                "coordinates {:?} exceed current dimensions of {:?}",
+                (x, y),
+                self.dimensions()
+            );
         }
-        unsafe {
-            self.index_from_coords_unchecked(x, y)
-        }
+        unsafe { self.index_from_coords_unchecked(x, y) }
     }
 
     unsafe fn index_from_coords_unchecked(&self, x: usize, y: usize) -> usize {
@@ -301,8 +296,7 @@ pub fn day3_part1(input: &str) -> usize {
 #[cfg(test)]
 const INPUT: &'static str = include_str!("../input/2018/day3.txt");
 #[cfg(test)]
-const HINT_INPUT: &'static str =
-r#"#1 @ 1,3: 4x4
+const HINT_INPUT: &'static str = r#"#1 @ 1,3: 4x4
 #2 @ 3,1: 4x4
 #3 @ 5,5: 2x2
 "#;
@@ -323,7 +317,9 @@ pub fn day3_part2_square_iteration(input: &str) -> usize {
     // OPT: Use ArrayVec for even more performance? Depends on max size.
     // OR OPT: Pre-allocating might be beneficial here, not sure how `size_hint` works for char
     // splits.
-    let mut claims = ClaimIterator::new(input).map(|c| (c, true)).collect::<Vec<_>>();
+    let mut claims = ClaimIterator::new(input)
+        .map(|c| (c, true))
+        .collect::<Vec<_>>();
 
     for i in 0..claims.len() {
         for j in i + 1..claims.len() {
@@ -336,11 +332,7 @@ pub fn day3_part2_square_iteration(input: &str) -> usize {
 
     let uncontested = claims
         .into_iter()
-        .filter_map(|(c, uncontested)| if uncontested {
-            Some(c)
-        } else {
-            None
-        })
+        .filter_map(|(c, uncontested)| if uncontested { Some(c) } else { None })
         .collect::<Vec<_>>();
     if uncontested.len() != 1 {
         panic!("Expected single remaining claim, got {:?}", uncontested);
@@ -350,7 +342,10 @@ pub fn day3_part2_square_iteration(input: &str) -> usize {
 
 #[test]
 fn test_day3_part2_square_iteration_hint() {
-    assert_eq!(day3_part2_square_iteration(HINT_INPUT), HINT_EXPECTED_PART2_OUTPUT);
+    assert_eq!(
+        day3_part2_square_iteration(HINT_INPUT),
+        HINT_EXPECTED_PART2_OUTPUT
+    );
 }
 
 #[test]
@@ -362,11 +357,18 @@ fn test_day3_part2_square_iteration_answer() {
 pub fn day3_part2_grid_again(input: &str) -> usize {
     let mut grid = GrowOnlyGrid::<u8>::new_with(1000, 1000, Default::default);
     let claims = ClaimIterator::new(input).collect::<Vec<_>>();
-    for Claim {id: _, left, top, right, bottom} in claims.iter() {
+    for Claim {
+        id: _,
+        left,
+        top,
+        right,
+        bottom,
+    } in claims.iter()
+    {
         grid.grow_with(
             right.checked_add(1).unwrap(),
             bottom.checked_add(1).unwrap(),
-            Default::default
+            Default::default,
         );
 
         for y in *top..*bottom {
@@ -378,18 +380,26 @@ pub fn day3_part2_grid_again(input: &str) -> usize {
 
     let uncontested = claims
         .into_iter()
-        .filter(|Claim { left, top, bottom, right, .. }| {
-            for y in *top..*bottom {
-                for x in *left..*right {
-                    let count = grid[(x, y)];
-                    assert!(count != 0);
-                    if count > 1 {
-                        return false;
+        .filter(
+            |Claim {
+                 left,
+                 top,
+                 bottom,
+                 right,
+                 ..
+             }| {
+                for y in *top..*bottom {
+                    for x in *left..*right {
+                        let count = grid[(x, y)];
+                        assert!(count != 0);
+                        if count > 1 {
+                            return false;
+                        }
                     }
                 }
-            }
-            true
-        })
+                true
+            },
+        )
         .collect::<Vec<_>>();
     assert_eq!(uncontested.len(), 1);
     uncontested[0].id
@@ -397,7 +407,10 @@ pub fn day3_part2_grid_again(input: &str) -> usize {
 
 #[test]
 fn test_day3_part2_grid_again_hint() {
-    assert_eq!(day3_part2_grid_again(HINT_INPUT), HINT_EXPECTED_PART2_OUTPUT);
+    assert_eq!(
+        day3_part2_grid_again(HINT_INPUT),
+        HINT_EXPECTED_PART2_OUTPUT
+    );
 }
 
 #[test]

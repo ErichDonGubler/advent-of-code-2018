@@ -1,31 +1,20 @@
 use {
     aoc_runner_derive::aoc,
     arrayvec::ArrayVec,
-    chrono::{
-        NaiveDateTime,
-        Timelike,
-    },
-    derive_more::{
-        Display,
-        Sub,
-    },
+    chrono::{NaiveDateTime, Timelike},
+    derive_more::{Display, Sub},
     lazy_static::lazy_static,
     re_parse::Regex,
     std::{
-        collections::BTreeMap,
         cmp::Ordering::*,
-        fmt::{
-            Display,
-            Formatter,
-            Result as FmtResult,
-        },
+        collections::BTreeMap,
+        fmt::{Display, Formatter, Result as FmtResult},
     },
     try_from::TryFrom,
 };
 
 #[cfg(test)]
-const HINT_INPUT: &'static str =
-r#"[1518-11-01 00:00] Guard #10 begins shift
+const HINT_INPUT: &'static str = r#"[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
 [1518-11-01 00:25] wakes up
 [1518-11-01 00:30] falls asleep
@@ -61,10 +50,13 @@ impl Display for Answer {
 
 #[test]
 fn test_day4_part1_hint() {
-    assert_eq!(day4_part1(HINT_INPUT), Answer {
-        guard_id: GuardId(10),
-        minute: Minute(24),
-    });
+    assert_eq!(
+        day4_part1(HINT_INPUT),
+        Answer {
+            guard_id: GuardId(10),
+            minute: Minute(24),
+        }
+    );
 }
 
 #[derive(Clone, Copy, Debug, Display, Eq, Ord, PartialEq, PartialOrd)]
@@ -93,16 +85,17 @@ impl TryFrom<u8> for Minute {
 
 #[derive(Debug)]
 enum GuardEvent {
-    ShiftChange {
-        new_guard_id: GuardId,
-    },
+    ShiftChange { new_guard_id: GuardId },
     FallAsleep,
     WakeUp,
 }
 
 type MinuteCounts = [u8; MINUTES_PER_HOUR as usize - 1];
 
-fn process_input<F: FnMut(GuardId, (Minute, Minute))>(input: &str, mut f: F) -> BTreeMap<GuardId, MinuteCounts> {
+fn process_input<F: FnMut(GuardId, (Minute, Minute))>(
+    input: &str,
+    mut f: F,
+) -> BTreeMap<GuardId, MinuteCounts> {
     use self::GuardEvent::*;
 
     let mut log = BTreeMap::new();
@@ -117,7 +110,8 @@ fn process_input<F: FnMut(GuardId, (Minute, Minute))>(input: &str, mut f: F) -> 
                 NaiveDateTime::parse_from_str(time, "[%Y-%m-%d %R]").unwrap(),
                 {
                     lazy_static! {
-                        static ref REGEX_SHIFT_CHANGE: Regex = Regex::new(r#"Guard #(?P<new_guard_id>\d{1,4}) begins shift"#).unwrap();
+                        static ref REGEX_SHIFT_CHANGE: Regex =
+                            Regex::new(r#"Guard #(?P<new_guard_id>\d{1,4}) begins shift"#).unwrap();
                     }
                     assert_eq!(guard_event_str.chars().next().unwrap(), ' ');
                     guard_event_str = &guard_event_str[1..];
@@ -125,10 +119,14 @@ fn process_input<F: FnMut(GuardId, (Minute, Minute))>(input: &str, mut f: F) -> 
                         "wakes up" => WakeUp,
                         "falls asleep" => FallAsleep,
                         other => ShiftChange {
-                            new_guard_id: REGEX_SHIFT_CHANGE.captures(other).unwrap()["new_guard_id"].parse().map(GuardId).unwrap(),
-                        }
+                            new_guard_id: REGEX_SHIFT_CHANGE.captures(other).unwrap()
+                                ["new_guard_id"]
+                                .parse()
+                                .map(GuardId)
+                                .unwrap(),
+                        },
                     }
-                }
+                },
             )
         };
         log.insert(time, event);
@@ -149,7 +147,10 @@ fn process_input<F: FnMut(GuardId, (Minute, Minute))>(input: &str, mut f: F) -> 
                 Some((_, ShiftChange { .. })) => break,
                 Some((time, FallAsleep)) => time,
                 None => break 'shift,
-                other => panic!("expected guard falling asleep as next event, got {:?}", other),
+                other => panic!(
+                    "expected guard falling asleep as next event, got {:?}",
+                    other
+                ),
             };
             let end_time = match log_events.next() {
                 Some((time, WakeUp)) => time,
@@ -163,7 +164,9 @@ fn process_input<F: FnMut(GuardId, (Minute, Minute))>(input: &str, mut f: F) -> 
             let end_minute = Minute::try_from(end_time.minute() as u8).unwrap();
             assert!(start_minute < end_minute);
 
-            let minute_counts = guard_midnight_sleep_minutes.entry(current_guard_id).or_insert_with(|| [0u8; MINUTES_PER_HOUR as usize - 1]);
+            let minute_counts = guard_midnight_sleep_minutes
+                .entry(current_guard_id)
+                .or_insert_with(|| [0u8; MINUTES_PER_HOUR as usize - 1]);
             for minute_count in &mut minute_counts[start_minute.0 as usize..end_minute.0 as usize] {
                 *minute_count += 1;
             }
@@ -176,7 +179,9 @@ fn process_input<F: FnMut(GuardId, (Minute, Minute))>(input: &str, mut f: F) -> 
     guard_midnight_sleep_minutes
 }
 
-fn most_common_minutes(minute_counts: &MinuteCounts) -> (ArrayVec<[Minute; MINUTES_PER_HOUR as usize - 1]>, u8) {
+fn most_common_minutes(
+    minute_counts: &MinuteCounts,
+) -> (ArrayVec<[Minute; MINUTES_PER_HOUR as usize - 1]>, u8) {
     let mut minutes = ArrayVec::<[Minute; MINUTES_PER_HOUR as usize - 1]>::new();
     let mut highest_minute_count_seen = 0;
     for (minute, count) in minute_counts.iter().enumerate() {
@@ -186,7 +191,7 @@ fn most_common_minutes(minute_counts: &MinuteCounts) -> (ArrayVec<[Minute; MINUT
                 highest_minute_count_seen = *count;
                 minutes.clear();
                 minutes.push(minute);
-            },
+            }
             Equal => minutes.push(minute),
             Less => (),
         }
@@ -197,7 +202,10 @@ fn most_common_minutes(minute_counts: &MinuteCounts) -> (ArrayVec<[Minute; MINUT
 #[aoc(day4, part1)]
 pub fn day4_part1(input: &str) -> Answer {
     let mut midnight_sleep_minute_counts = BTreeMap::new();
-    let midnight_sleep_minutes = process_input(input, |guard_id, (start_minute, end_minute)| *midnight_sleep_minute_counts.entry(guard_id).or_insert(0u32) += (end_minute - start_minute).0 as u32);
+    let midnight_sleep_minutes = process_input(input, |guard_id, (start_minute, end_minute)| {
+        *midnight_sleep_minute_counts.entry(guard_id).or_insert(0u32) +=
+            (end_minute - start_minute).0 as u32
+    });
 
     let sleepiest_guard = {
         let mut iter = midnight_sleep_minute_counts.iter();
@@ -209,7 +217,7 @@ pub fn day4_part1(input: &str) -> Answer {
                     most_seen = minutes_asleep;
                     sleepiest_guard = guard;
                     equals_seen = 0;
-                },
+                }
                 Equal => equals_seen += 1,
                 Less => (),
             }
@@ -219,7 +227,8 @@ pub fn day4_part1(input: &str) -> Answer {
     };
 
     let most_common_minute = {
-        let (minutes, _) = most_common_minutes(midnight_sleep_minutes.get(sleepiest_guard).unwrap());
+        let (minutes, _) =
+            most_common_minutes(midnight_sleep_minutes.get(sleepiest_guard).unwrap());
         assert_eq!(minutes.len(), 1);
         minutes[0]
     };
@@ -232,24 +241,30 @@ pub fn day4_part1(input: &str) -> Answer {
 
 #[test]
 fn test_day4_part1_answer() {
-    assert_eq!(day4_part1(INPUT), Answer {
-        guard_id: GuardId(641),
-        minute: Minute(41),
-    });
+    assert_eq!(
+        day4_part1(INPUT),
+        Answer {
+            guard_id: GuardId(641),
+            minute: Minute(41),
+        }
+    );
 }
 
 #[aoc(day4, part2)]
 pub fn day4_part2(input: &str) -> Answer {
     let mut log = process_input(input, |_, _| {}).into_iter();
     let mut next_guard_minutes = || log.next().map(|(g, m)| (g, most_common_minutes(&m)));
-    let (mut guard_with_highest_minute_count, (mut most_common_minutes_for_guard, mut highest_minute_count_seen)) = next_guard_minutes().unwrap();
+    let (
+        mut guard_with_highest_minute_count,
+        (mut most_common_minutes_for_guard, mut highest_minute_count_seen),
+    ) = next_guard_minutes().unwrap();
     while let Some((guard, (most_common_minutes, greatest_minute_count))) = next_guard_minutes() {
         match greatest_minute_count.cmp(&highest_minute_count_seen) {
             Greater => {
                 guard_with_highest_minute_count = guard;
                 most_common_minutes_for_guard = most_common_minutes;
                 highest_minute_count_seen = greatest_minute_count;
-            },
+            }
             Equal | Less => (),
         }
     }
@@ -262,16 +277,22 @@ pub fn day4_part2(input: &str) -> Answer {
 
 #[test]
 fn test_day4_part2_hint() {
-    assert_eq!(day4_part2(HINT_INPUT), Answer {
-        guard_id: GuardId(99),
-        minute: Minute(45),
-    });
+    assert_eq!(
+        day4_part2(HINT_INPUT),
+        Answer {
+            guard_id: GuardId(99),
+            minute: Minute(45),
+        }
+    );
 }
 
 #[test]
 fn test_day4_part2_answer() {
-    assert_eq!(day4_part2(INPUT), Answer {
-        guard_id: GuardId(1973),
-        minute: Minute(37),
-    });
+    assert_eq!(
+        day4_part2(INPUT),
+        Answer {
+            guard_id: GuardId(1973),
+            minute: Minute(37),
+        }
+    );
 }

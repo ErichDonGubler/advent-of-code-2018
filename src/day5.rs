@@ -1,17 +1,10 @@
 use {
-    aoc_runner_derive::{aoc},
-    ascii::{
-        AsciiChar,
-        AsciiStr,
-        AsciiString,
-        AsAsciiStr,
-        AsAsciiStrError,
-    },
+    aoc_runner_derive::aoc,
+    ascii::{AsAsciiStr, AsAsciiStrError, AsciiChar, AsciiStr, AsciiString},
     itertools::Itertools,
-    std::{collections::HashSet},
+    std::collections::HashSet,
     try_from::TryFrom,
 };
-
 
 #[cfg(test)]
 mod test {
@@ -66,7 +59,7 @@ impl<'a> TryFrom<&'a str> for Polymer<'a> {
     type Err = PolymerParseError;
 
     fn try_from(s: &'a str) -> Result<Self, Self::Err> {
-        use self::{PolymerParseError::*};
+        use self::PolymerParseError::*;
 
         let a = s.as_ascii_str().map_err(InputIsNotAscii)?;
         for (i, c) in a.chars().enumerate() {
@@ -106,7 +99,9 @@ pub fn day5_part1_vec_split(input: &str) -> usize {
         polymer = &polymer[2..];
     }
 
-    while polymer.len() >= 2 && are_opposite_case(polymer[polymer.len() - 1], polymer[polymer.len() - 2]) {
+    while polymer.len() >= 2
+        && are_opposite_case(polymer[polymer.len() - 1], polymer[polymer.len() - 2])
+    {
         polymer = &polymer[..polymer.len() - 2];
     }
 
@@ -117,7 +112,11 @@ pub fn day5_part1_vec_split(input: &str) -> usize {
 
     let mut polymer_groups = Vec::new();
     let mut next_split_begin = 0;
-    let mut iter = polymer[..polymer.len() - 1].chars().enumerate().tuple_windows::<(_, _)>().skip(1);
+    let mut iter = polymer[..polymer.len() - 1]
+        .chars()
+        .enumerate()
+        .tuple_windows::<(_, _)>()
+        .skip(1);
     let mut next = iter.next().unwrap();
     loop {
         let ((i, c1), (_, c2)) = next;
@@ -186,13 +185,21 @@ pub fn day5_part1_vec_split(input: &str) -> usize {
 pub fn day5_part2(input: &str) -> usize {
     let Polymer(polymer) = Polymer::try_from(input.trim()).unwrap();
 
-    polymer.chars()
-        .fold(HashSet::with_capacity(26), |mut acc, c| { acc.insert(c); acc })
+    polymer
+        .chars()
+        .fold(HashSet::with_capacity(26), |mut acc, c| {
+            acc.insert(c);
+            acc
+        })
         .into_iter()
         .map(|c| {
-            let polymer = polymer.chars().cloned()
+            let polymer = polymer
+                .chars()
+                .cloned()
                 .filter(|p| p.to_ascii_lowercase() != c.to_ascii_lowercase())
                 .collect::<AsciiString>();
             day5_part1_brute(polymer.as_str()) // FIXME: Make an intermediate function, silly
-        }).min().unwrap()
+        })
+        .min()
+        .unwrap()
 }
