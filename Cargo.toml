@@ -7,14 +7,7 @@ edition = "2018"
 [dependencies]
 aoc-runner = "0.1.0"
 aoc-runner-derive = "0.1.6"
-arrayvec = { version = "0.4.8", features = ["array-sizes-33-128", "array-sizes-129-255"] }
-ascii = { git = "https://github.com/erichdongubler/rust-ascii" }
-chrono = "0.4.6"
-derive_more = "0.13.0"
-itertools = "0.7.11"
-lazy_static = "1.2.0"
 re-parse = "0.1.0"
 re-parse-macros = "0.1.0"
 serde = "1.0.80"
 serde_derive = "1.0.80"
-try_from = "0.3.2"
