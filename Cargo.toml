@@ -10,7 +10,7 @@ aoc-runner-derive = "0.2.1"
 arrayvec = { version = "0.4.8", features = ["array-sizes-33-128", "array-sizes-129-255"] }
 ascii = { git = "https://github.com/erichdongubler/rust-ascii" }
 chrono = "0.4.6"
-derive_more = "0.15.0"
+derive_more = "0.99.1"
 itertools = "0.8.0"
 lazy_static = "1.2.0"
 re-parse = "0.1.0"
